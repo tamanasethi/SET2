@@ -1,0 +1,58 @@
+// Create the collection "students" and insert student data
+db.createCollection("students");
+
+db.students.insertMany([
+    { roll_no: 1, name: "Alice", class: "TE", dept: "CSE", aggregate_marks: 85 },
+    { roll_no: 2, name: "Bob", class: "SE", dept: "IT", aggregate_marks: 76 },
+    { roll_no: 3, name: "Charlie", class: "BE", dept: "CSE", aggregate_marks: 90 },
+    { roll_no: 4, name: "David", class: "TE", dept: "CSE", aggregate_marks: 88 },
+    { roll_no: 5, name: "Eve", class: "SE", dept: "IT", aggregate_marks: 79 },
+    { roll_no: 6, name: "Frank", class: "BE", dept: "IT", aggregate_marks: 92 },
+    { roll_no: 7, name: "Grace", class: "TE", dept: "ECE", aggregate_marks: 78 },
+    { roll_no: 8, name: "Heidi", class: "SE", dept: "ECE", aggregate_marks: 82 }
+]);
+
+
+
+QUERRY 1:
+
+var map1 = function() {
+    if (this.class == "TE") {
+        emit(this.dept, this.aggregate_marks);  // Emit department as the key and marks as the value
+    }
+};
+var reduce1 = function(key, values) {
+    return Array.sum(values);  // Sum all the marks for each department
+};
+db.students.mapReduce(map1, reduce1, { out: "total_marks_te" });  // Store the result in "total_marks_te" collection
+
+
+QUERRY 2:
+
+var map2 = function() {
+    if (this.class == "SE") {
+        emit(this.dept, this.aggregate_marks);  // Emit department as the key and marks as the value
+    }
+};
+var reduce2 = function(key, values) {
+    return Math.max.apply(null, values);  // Get the maximum marks for each department
+};
+db.students.mapReduce(map2, reduce2, { out: "highest_marks_se" });  // Store the result in "highest_marks_se" collection
+
+QUERRY 3:
+
+var map3 = function() {
+    if (this.class == "BE") {
+        emit(this.dept, { totalMarks: this.aggregate_marks, count: 1 });  // Emit department as the key with marks and count
+    }
+};
+var reduce3 = function(key, values) {
+    var result = { totalMarks: 0, count: 0 };
+    values.forEach(function(value) {
+        result.totalMarks += value.totalMarks;  // Sum the total marks
+        result.count += value.count;  // Count the number of students
+    });
+    result.avgMarks = result.totalMarks / result.count;  // Calculate average marks
+    return result;
+};
+db.students.mapReduce(map3, reduce3, { out: "average_marks_be" });  // Store the result in "average_marks_be" collection

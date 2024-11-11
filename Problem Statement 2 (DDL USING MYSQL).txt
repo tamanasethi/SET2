@@ -1,0 +1,93 @@
+Problem Statement 2 (DDL USING MYSQL) Create following tables using a given schema and insert appropriate data into the same: Customer (CustID, Name, Cust_Address, Phone_no, Email_ID, Age) Branch (Branch ID, Branch_Name, Address) Account (Account_no, Branch ID, CustID, open_date, Account_type, Balance) 
+
+
+create database prac2;
+use prac2;
+
+-- Create the Customer table
+CREATE TABLE Customer (
+    CustID INT PRIMARY KEY,
+    Name VARCHAR(50),
+    Cust_Address VARCHAR(100),
+    Phone_no VARCHAR(15),
+    Email_ID VARCHAR(50),
+    Age INT
+);
+
+-- Create the Branch table
+CREATE TABLE Branch (
+    Branch_ID INT PRIMARY KEY,
+    Branch_Name VARCHAR(50),
+    Address VARCHAR(100)
+);
+
+-- Create the Account table with referential integrity
+CREATE TABLE Account (
+    Account_no INT PRIMARY KEY,
+    Branch_ID INT,
+    CustID INT,
+    open_date DATE,
+    Account_type VARCHAR(20),
+    Balance DECIMAL(15, 2),
+    FOREIGN KEY (Branch_ID) REFERENCES Branch(Branch_ID),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+);
+
+-- Insert data into Customer table
+INSERT INTO Customer (CustID, Name, Cust_Address, Phone_no, Email_ID, Age) VALUES
+(101, 'John Doe', '123 Main St', '555-1234', 'john.doe@example.com', 30),
+(102, 'Jane Smith', '456 Elm St', '555-5678', 'jane.smith@example.com', 25),
+(103, 'Michael Johnson', '789 Oak St', '555-9012', 'michael.j@example.com', 40),
+(104, 'Emily Brown', '321 Pine St', '555-3456', 'emily.b@example.com', 35);
+
+-- Insert data into Branch table
+INSERT INTO Branch (Branch_ID, Branch_Name, Address) VALUES
+(1, 'Main Branch', '123 Bank Ave'),
+(2, 'East Branch', '456 Finance Rd'),
+(3, 'West Branch', '789 Wealth Blvd');
+
+-- Insert data into Account table
+INSERT INTO Account (Account_no, Branch_ID, CustID, open_date, Account_type, Balance) VALUES
+(1001, 1, 101, '2018-08-16', 'Saving', 5000.00),
+(1002, 2, 102, '2019-01-10', 'Saving', 10000.00),
+(1003, 1, 103, '2018-08-16', 'Saving', 15000.00),
+(1004, 3, 104, '2018-02-16', 'Loan', 200000.00),
+(1005, 2, 101, '2018-02-16', 'Loan', 250000.00);
+
+-- 3. Create a view named 'SavingAccount' displaying customer details with the open date as '16/8/2018'
+CREATE VIEW SavingAccount AS
+SELECT c.CustID, c.Name, c.Cust_Address, c.Phone_no, c.Email_ID, c.Age, a.open_date, a.Account_type, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Account_type = 'Saving' AND a.open_date = '2018-08-16';
+
+-- 4. Update the 'SavingAccount' view to set Cust_Address as 'Pune' for CustID = 103
+UPDATE Customer
+SET Cust_Address = 'Pune'
+WHERE CustID = 103;
+
+-- 5. Create a view named 'LoanAccount' displaying customer details with the open date as '16/2/2018'
+CREATE VIEW LoanAccount AS
+SELECT c.CustID, c.Name, c.Cust_Address, c.Phone_no, c.Email_ID, c.Age, a.open_date, a.Account_type, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Account_type = 'Loan' AND a.open_date = '2018-02-16';
+
+-- 6. Create an index on the primary key column of the Customer table
+CREATE INDEX idx_Customer_CustID ON Customer(CustID);
+
+-- 7. Create an index on the primary key column of the Branch table
+CREATE INDEX idx_Branch_BranchID ON Branch(Branch_ID);
+
+
+ye niche wale support nii krte MySQL me
+
+-- 8. Create a sequence on the Customer table (if supported by your SQL environment)
+-- In MySQL, sequences are not supported directly, but you can use AUTO_INCREMENT for this purpose.
+-- Example for AUTO_INCREMENT:
+ALTER TABLE Customer MODIFY CustID INT AUTO_INCREMENT;
+
+-- 9. Create a synonym 'Cust_info' for the Branch table
+-- Synonyms are typically supported in Oracle. In MySQL, you would use an alias in queries.
+-- Example syntax for Oracle:
+CREATE SYNONYM Cust_info FOR Branch;

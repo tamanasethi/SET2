@@ -1,0 +1,88 @@
+Create Book Collection with (Title, Author_name, Borrowed_status) as fields. Write Map Reduce Functions for
+following requirements.
+
+1. Display Author wise list of books.
+2. Display Author wise list of books having Borrowed status as “True”.
+3. Display Author wise list of books having price greater than 300.
+
+
+
+// Step 1: Create the Book Collection with fields Title, Author_name, and Borrowed_status
+db.createCollection("Books");
+
+// Insert documents into the Books collection
+db.Books.insertMany([
+    { Title: "The Alchemist", Author_name: "Aarav Sharma", Borrowed_status: false, Price: 350 },
+    { Title: "The White Tiger", Author_name: "Priya Desai", Borrowed_status: true, Price: 250 },
+    { Title: "Chetan's Adventure", Author_name: "Rohan Patel", Borrowed_status: false, Price: 400 },
+    { Title: "Mumbai Dreams", Author_name: "Neha Gupta", Borrowed_status: true, Price: 500 },
+    { Title: "The Silent Valley", Author_name: "Vikram Reddy", Borrowed_status: false, Price: 150 },
+    { Title: "Love and Life", Author_name: "Ayesha Khan", Borrowed_status: true, Price: 350 },
+    { Title: "The Forgotten Road", Author_name: "Rajesh Kumar", Borrowed_status: true, Price: 600 },
+    { Title: "The Immortals of Meluha", Author_name: "Divya Iyer", Borrowed_status: false, Price: 450 },
+    { Title: "The Blue Mountains", Author_name: "Rohit Singh", Borrowed_status: false, Price: 100 },
+    { Title: "The Broken Kingdom", Author_name: "Anjali Verma", Borrowed_status: true, Price: 200 },
+    { Title: "The River's Journey", Author_name: "Harish Rao", Borrowed_status: true, Price: 800 },
+    { Title: "The Butterfly Effect", Author_name: "Meera Nair", Borrowed_status: false, Price: 550 },
+    { Title: "The Red Fort", Author_name: "Amit Joshi", Borrowed_status: true, Price: 700 },
+    { Title: "The Green Lantern", Author_name: "Sneha Malhotra", Borrowed_status: false, Price: 300 },
+    { Title: "The Last Sunset", Author_name: "Karan Mehta", Borrowed_status: true, Price: 650 },
+    { Title: "The Sea Waves", Author_name: "Simran Choudhary", Borrowed_status: false, Price: 500 },
+    { Title: "The City of Gold", Author_name: "Manoj Bhatia", Borrowed_status: true, Price: 550 },
+    { Title: "Into the Wild", Author_name: "Sunita Dubey", Borrowed_status: false, Price: 450 },
+    { Title: "The Soul of India", Author_name: "Rajeev Bhagat", Borrowed_status: true, Price: 800 },
+    { Title: "Wings of Freedom", Author_name: "Kavita Mishra", Borrowed_status: false, Price: 350 }
+]);
+
+// Step 2: MapReduce to display Author-wise list of books
+var mapFunction = function() {
+    emit(this.Author_name, this.Title);
+};
+
+var reduceFunction = function(key, values) {
+    return values;
+};
+
+db.Books.mapReduce(mapFunction, reduceFunction, { out: "author_books" });
+Db.author_books.find().pretty()
+
+// Step 3: MapReduce to display Author-wise list of books having Borrowed_status as "True"
+var mapFunctionBorrowed = function() {
+    if (this.Borrowed_status === true) {
+        emit(this.Author_name, this.Title);
+    }
+};
+
+var reduceFunctionBorrowed = function(key, values) {
+    return values;
+};
+
+db.Books.mapReduce(mapFunctionBorrowed, reduceFunctionBorrowed, { out: "author_books_borrowed" });
+
+// Step 4: MapReduce to display Author-wise list of books with price greater than 300
+var mapFunctionPrice = function() {
+    if (this.Price > 300) {
+        emit(this.Author_name, this.Title);
+    }
+};
+
+var reduceFunctionPrice = function(key, values) {
+    return values;
+};
+
+db.Books.mapReduce(mapFunctionPrice, reduceFunctionPrice, { out: "author_books_price" });
+
+// Step 5: Query to list all users (author-wise) in a formatted manner
+db.author_books.find().forEach(function(doc) {
+    print("Author: " + doc._id + ", Books: " + doc.value.join(", "));
+});
+
+// Step 6: Query to find all authors having books with Borrowed_status as "True"
+db.author_books_borrowed.find().forEach(function(doc) {
+    print("Author: " + doc._id + ", Books Borrowed: " + doc.value.join(", "));
+});
+
+// Step 7: Query to display author-wise list of books with price greater than 300
+db.author_books_price.find().forEach(function(doc) {
+    print("Author: " + doc._id + ", Books (Price > 300): " + doc.value.join(", "));
+});

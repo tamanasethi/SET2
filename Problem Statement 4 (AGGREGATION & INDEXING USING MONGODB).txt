@@ -1,0 +1,106 @@
+Create the Collection Student_Data( Student _ID, Student _Name, Department, Marks )and solve the
+following:
+
+1. Display all Students based on their departments along with an average Marks of a particular
+department.
+2. Displays the number of Students associated along with a particular department.
+3. Display list of Students with the highest Marks in each Department in descending order
+of Marks.
+4. Create an index on field Student_ID.
+5. Create an index on fields “Student_Name‘ and “Department”.
+6. Drop an index on field Student_ID.
+7. Drop an index on fields “Student_Name‘ and “Department”.
+
+// 1. Create the Collection and Insert Data
+db.createCollection("Student_Data");
+
+db.Student_Data.insertMany([
+  { Student_ID: 1, Student_Name: "Amit Sharma", Department: "Computer Science", Marks: 85 },
+  { Student_ID: 2, Student_Name: "Priya Gupta", Department: "Electrical Engineering", Marks: 92 },
+  { Student_ID: 3, Student_Name: "Ravi Verma", Department: "Computer Science", Marks: 78 },
+  { Student_ID: 4, Student_Name: "Suman Singh", Department: "Mechanical Engineering", Marks: 88 },
+  { Student_ID: 5, Student_Name: "Neha Raj", Department: "Electrical Engineering", Marks: 95 },
+  { Student_ID: 6, Student_Name: "Rajeev Kumar", Department: "Computer Science", Marks: 91 },
+  { Student_ID: 7, Student_Name: "Rohit Patel", Department: "Mechanical Engineering", Marks: 82 }
+]);
+
+// 2. Display all Students based on their departments along with average marks of a particular department
+db.Student_Data.aggregate([
+  {
+    $group: {
+      _id: "$Department", // Group by department
+      averageMarks: { $avg: "$Marks" }, // Calculate the average marks for each department
+      students: { $push: { Student_ID: "$Student_ID", Student_Name: "$Student_Name", Marks: "$Marks" } }
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      Department: "$_id",
+      Average_Marks: "$averageMarks",
+      Students: "$students"
+    }
+  }
+]);
+
+// 3. Display the number of students associated with a particular department
+db.Student_Data.aggregate([
+  {
+    $group: {
+      _id: "$Department", // Group by department
+      studentCount: { $sum: 1 } // Count the number of students in each department
+    }
+  },
+  {
+    $project: {
+      _id: 0,
+      Department: "$_id",
+      Number_of_Students: "$studentCount"
+    }
+  }
+]);
+
+// 4. Display list of students with the highest marks in each department in descending order of marks
+db.Student_Data.aggregate([
+  {
+    $group: {
+      _id: "$Department", // Group by department
+      highestMarks: { $max: "$Marks" } // Find the highest marks in each department
+    }
+  },
+  {
+    $lookup: {
+      from: "Student_Data", // Join the Student_Data collection
+      localField: "highestMarks", // Match with the highest marks
+      foreignField: "Marks", // On the Marks field in the Student_Data collection
+      as: "topStudents" // Output the matching students as "topStudents"
+    }
+  },
+  { $unwind: "$topStudents" }, // Unwind the topStudents array to get individual student records
+  {
+    $project: {
+      _id: 0,
+      Department: "$_id",
+      Student_ID: "$topStudents.Student_ID",
+      Student_Name: "$topStudents.Student_Name",
+      Marks: "$topStudents.Marks"
+    }
+  },
+  { $sort: { Marks: -1 } } // Sort by Marks in descending order
+]);
+
+// 5. Create an index on the field 'Student_ID'
+db.Student_Data.createIndex({ Student_ID: 1 });
+
+// 6. Create an index on fields 'Student_Name' and 'Department'
+db.Student_Data.createIndex({ Student_Name: 1, Department: 1 });
+
+
+db.Student_Data.getIndexes();
+
+
+// 7. Drop an index on field 'Student_ID'
+db.Student_Data.dropIndex({ Student_ID: 1 });
+
+// 8. Drop an index on fields 'Student_Name' and 'Department'
+db.Student_Data.dropIndex({ Student_Name: 1, Department: 1 });

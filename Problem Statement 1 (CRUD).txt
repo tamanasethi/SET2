@@ -1,0 +1,60 @@
+Problem Statement 1 :Create collection Student with fields as Roll_No, Name, Class, Marks, Address, Enrolled_Courses. (Hint: One student can enrol in multiple courses. Use Array to store the names of courses enrolled) Insert 10 documents in the collection Student. Write the queries for following. 
+
+// Use the database (or create it if it doesn't exist)
+use schoolDB;
+
+// Inserting 10 documents into the Student collection
+
+db.Student.insertMany([
+    { Roll_No: "A01", Name: "John", Class: "SE", Marks: 65, Address: "Pune", Enrolled_courses: ["DBMS", "Maths"] },
+    { Roll_No: "A02", Name: "Ananya", Class: "SE", Marks: 78, Address: "Mumbai", Enrolled_courses: ["DBMS", "Maths", "Physics"] },
+    { Roll_No: "A03", Name: "Rohan", Class: "SE", Marks: 82, Address: "Delhi", Enrolled_courses: ["DBMS", "Chemistry"] },
+    { Roll_No: "A04", Name: "Priya", Class: "SE", Marks: 69, Address: "Bangalore", Enrolled_courses: ["Maths", "Biology"] },
+    { Roll_No: "A05", Name: "Aditya", Class: "SE", Marks: 90, Address: "Hyderabad", Enrolled_courses: ["DBMS", "Maths", "English"] },
+    { Roll_No: "A06", Name: "Sneha", Class: "SE", Marks: 75, Address: "Chennai", Enrolled_courses: ["Maths", "History"] },
+    { Roll_No: "A07", Name: "Vikram", Class: "SE", Marks: 88, Address: "Kolkata", Enrolled_courses: ["Physics", "Chemistry"] },
+    { Roll_No: "A08", Name: "Neha", Class: "SE", Marks: 70, Address: "Jaipur", Enrolled_courses: ["DBMS", "Maths", "English"] },
+    { Roll_No: "A09", Name: "Amit", Class: "SE", Marks: 85, Address: "Ahmedabad", Enrolled_courses: ["Biology", "Maths"] },
+    { Roll_No: "A10", Name: "Pooja", Class: "SE", Marks: 63, Address: "Chandigarh", Enrolled_courses: ["History", "DBMS"] },
+    { Roll_No: "A11", Name: "Rajesh", Class: "SE", Marks: 76, Address: "Lucknow", Enrolled_courses: ["Maths", "Physics", "DBMS"] }
+]);
+
+
+
+
+ 
+
+// Queries
+
+1.List the names of students who have enrolled in the course “DBMS”, “TOC”.                                     ^
+db.Student.find({Enrolled_courses:{$all:["DBMS","TOC"]}});
+
+
+// 2. List the Roll numbers and class of students who have marks more than 50 or class as TE.
+db.Student.find(
+    { $or: [{ Marks: { $gt: 50 } }, { Class: "TE" }] },
+    { Roll_No: 1, Class: 1, _id: 0 }
+);
+
+// 3. Update the entire record of roll number A10.
+db.Student.updateOne(
+    { Roll_No: "A10" },
+    {
+        $set: {
+            Name: "Isaac Newton",
+            Class: "BE",
+            Marks: 65,
+            Address: "707 New Spruce St",
+            Enrolled_Courses: ["Calculus", "Physics", "Mechanics"]
+        }
+    }
+);
+
+// 4. Display the names of students having 3rd and 4th highest marks.
+db.Student.find({},{Name:1,Marks:1,_id:0}).sort({Marks:-1}).skip(2).limit(2);
+
+// 5. Delete the records of students having marks less than 20.
+db.Student.deleteMany({ Marks: { $lt: 20 } });
+
+// 6. Delete only the first record from the collection.
+db.Student.deleteOne({});

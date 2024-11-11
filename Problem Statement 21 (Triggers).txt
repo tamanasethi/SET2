@@ -1,0 +1,68 @@
+Problem Statement 21 (Triggers)
+Employee(emp_id, emp_name, salary, designation)
+Salary_Backup(emp_id, old_salary, new_salary, salary_difference)
+Create a Trigger to record salary change of the employee. Whenever salary is updated insert the details in
+Salary_Backup table.
+Create a Trigger that will prevent deleting the employee record having designation as CEO.
+
+-- Create Employee table
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(100),
+    salary DECIMAL(10, 2),
+    designation VARCHAR(50)
+);
+
+-- Create Salary_Backup table
+CREATE TABLE Salary_Backup (
+    emp_id INT,
+    old_salary DECIMAL(10, 2),
+    new_salary DECIMAL(10, 2),
+    salary_difference DECIMAL(10, 2),
+    FOREIGN KEY (emp_id) REFERENCES Employee(emp_id)
+);
+
+-- Insert data into Employee table
+INSERT INTO Employee (emp_id, emp_name, salary, designation) VALUES
+(1, 'Amit Sharma', 50000, 'Manager'),
+(2, 'Rajesh Kumar', 100000, 'CEO'),
+(3, 'Priya Mehta', 60000, 'HR'),
+(4, 'Anil Gupta', 45000, 'Engineer');
+
+DELIMITER //
+
+CREATE TRIGGER RecordSalaryChange
+BEFORE UPDATE ON Employee
+FOR EACH ROW
+BEGIN
+    -- Check if salary has changed
+    IF OLD.salary != NEW.salary THEN
+        -- Insert the old and new salary into Salary_Backup table
+        INSERT INTO Salary_Backup (emp_id, old_salary, new_salary, salary_difference)
+        VALUES (OLD.emp_id, OLD.salary, NEW.salary, NEW.salary - OLD.salary);
+    END IF;
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE TRIGGER PreventCEODeletion
+BEFORE DELETE ON Employee
+FOR EACH ROW
+BEGIN
+    -- If the employee's designation is "CEO", raise an error to prevent deletion
+    IF OLD.designation = 'CEO' THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cannot delete employee with designation CEO';
+    END IF;
+END //
+
+DELIMITER ;
+
+-- Update salary of Amit Sharma
+UPDATE Employee
+SET salary = 55000
+WHERE emp_id = 1;
+
+SELECT * FROM Salary_Backup;
